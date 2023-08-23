@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 
+	_ "github.com/jackc/pgconn"
+	_ "github.com/jackc/pgx/v4"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	_ "github.com/lib/pq"
 )
 
@@ -13,7 +16,7 @@ type AppDB struct {
 }
 
 func Connect() (*AppDB, error) {
-	db, err := sql.Open("postgres", "postgresql://go_chat:go_chat@localhost:1234/go_chat_db?sslmode=false")
+	db, err := sql.Open("pgx", "postgresql://go_chat:go_chat@localhost:1234/go_chat_db?sslmode=false")
 	if err != nil {
 		return nil, err
 	}
@@ -30,11 +33,12 @@ func (db *AppDB) GetDbPool() *sql.DB {
 
 // this interface type is used so any repo implements it can receive a transaction "tx" or the database pool itself "db"
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	// i named the params here because i need the users to know what they should pass to this func
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 
-	PrepareContext(context.Context, string) (*sql.Result, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Result, error)
 
-	QueryContext(context.Context, string, ...interface{}) (*sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Result, error)
 
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
