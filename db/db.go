@@ -1,12 +1,12 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 
 	_ "github.com/lib/pq"
 )
 
-// i will encapsulate the db_pool inside this struct and i defined this struct to allow methods into at as a reciever to deal with the database conn pool from outside packages
 type AppDB struct {
 	// private access to the `db` package only
 	db_pool *sql.DB
@@ -26,4 +26,15 @@ func (db *AppDB) Close() {
 
 func (db *AppDB) GetDbPool() *sql.DB {
 	return db.db_pool
+}
+
+// this interface type is used so any repo implements it can receive a transaction "tx" or the database pool itself "db"
+type DBTX interface {
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+
+	PrepareContext(context.Context, string) (*sql.Result, error)
+
+	QueryContext(context.Context, string, ...interface{}) (*sql.Result, error)
+
+	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }

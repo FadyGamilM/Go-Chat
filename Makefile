@@ -10,3 +10,11 @@ access_shell:
 
 start_db_container:
 	docker start ${DB_CONTAINER_NAME}
+
+
+
+migrate_up:
+	docker run -i -v "H:\1- freelancing path\Courses\golang stack\projects\Go-Chat\db\migrations:/migrations" --network host migrate/migrate -path=/migrations/ -database "postgresql://go_chat:go_chat@127.0.0.1:1234/go_chat_db?sslmode=disable" up 1
+
+migrate_down:
+	docker run -i -v "H:\1- freelancing path\Courses\golang stack\projects\Go-Chat\db\migrations:/migrations" --network host migrate/migrate -path=/migrations/ -database "postgresql://go_chat:go_chat@127.0.0.1:1234/go_chat_db?sslmode=disable" down 1
