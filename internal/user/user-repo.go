@@ -11,10 +11,6 @@ type pg_repository struct {
 	db db.DBTX
 }
 
-type UserRepo interface {
-	Create(context.Context, *User) (*User, error)
-}
-
 func NewUserRepo(db db.DBTX) UserRepo {
 	return &pg_repository{
 		db: db,
