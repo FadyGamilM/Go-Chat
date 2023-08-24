@@ -2,8 +2,11 @@ package user
 
 import (
 	"context"
+	"log"
 	"strconv"
 	"time"
+
+	"github.com/FadyGamilM/Go-Chat/internal/utils"
 )
 
 type userService struct {
@@ -19,9 +22,16 @@ func NewUserService(ur UserRepo) *userService {
 }
 
 func (us *userService) Create(ctx context.Context, u *CreateUserReq) (*CreateUserRes, error) {
+	var err error
 	// set the timeout of the passed context and defer the canceling in case of any business logic or data layer method exceed the timeout
 	ctx, cancel := context.WithTimeout(ctx, us.timeout)
 	defer cancel()
+
+	// hash the password of the req dto data
+	u.Password, err = utils.HashPassword(u.Password)
+	if err != nil {
+		log.Printf("error while trying to hash the user password : %v \n", err)
+	}
 
 	// convert the req dto into domain entity to pass to the data layer
 	domainUser := u.ToDomainEntity()
