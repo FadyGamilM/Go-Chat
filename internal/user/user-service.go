@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strconv"
 	"time"
@@ -52,4 +53,44 @@ func (us *userService) Create(ctx context.Context, u *CreateUserReq) (*CreateUse
 
 	// return the response to the handler component
 	return userRespDto, nil
+}
+
+func (us *userService) Login(ctx context.Context, u *LoginUserReq) (*LoginUserRes, error) {
+	var err error
+
+	// loginPassword := u.Password
+
+	// set the context timeout to pass it to the business logic and repo logic
+	ctx, cancel := context.WithTimeout(ctx, us.timeout)
+	defer cancel()
+
+	// convert the login dto into user domain entity to pass it to the data layer
+	user := u.ToDomainEntity()
+
+	// we need to check if this email exists or not
+	registeredUser, err := us.repo.Login(ctx, user.Email)
+	println("the user retrieved from database : ", registeredUser.Password)
+	if err != nil {
+		// check the error type and build a robust error handler mechanism later on
+		return nil, err
+	}
+
+	// then we need to check the password against the hashed stored password in database
+	isMatching, err := utils.CheckPassword(user.Password, registeredUser.Password)
+	if err != nil {
+		return nil, err
+	}
+	if !isMatching {
+		return nil, errors.New("incorrect credentials")
+	}
+
+	// convert the retrieved domain entity into response dto
+	resDto := &LoginUserRes{
+		ID:       strconv.Itoa(int(registeredUser.ID)),
+		Username: registeredUser.Username,
+		Email:    registeredUser.Email,
+	}
+
+	// return the result
+	return resDto, nil
 }

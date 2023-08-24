@@ -38,3 +38,22 @@ func (pgRepo *pg_repository) Create(ctx context.Context, u *User) (*User, error)
 
 	return u, nil
 }
+
+func (pgRepo *pg_repository) Login(ctx context.Context, email string) (*User, error) {
+	login_user_query := `
+		SELECT id, username, password, email 
+		FROM users 
+		WHERE email = $1
+	`
+	var err error
+	foundUser := new(User)
+
+	// fetch the user with provided email to check if there is user with this email in the system or not
+	err = pgRepo.db.QueryRowContext(ctx, login_user_query, email).Scan(&foundUser.ID, &foundUser.Username, &foundUser.Password, &foundUser.Email)
+	if err != nil {
+		log.Printf("error while trying to fetch user by email : %v \n", err)
+		return nil, err
+	}
+
+	return foundUser, nil
+}

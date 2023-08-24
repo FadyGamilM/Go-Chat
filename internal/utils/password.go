@@ -17,9 +17,14 @@ func HashPassword(password string) (string, error) {
 // this function recieves the `providedPass` which is provided by user at login time and the `hashedPass` which is the stored hashed password in database to compare them
 func CheckPassword(providedPass, hashedPass string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPass), []byte(providedPass))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		log.Printf("password is not correct %v \n", err)
+		return false, err
+	}
 	if err != nil {
 		log.Printf("error while trying to compare the provided password against the hashed password from database %v \n", err)
 		return false, err
 	}
+
 	return true, nil
 }
