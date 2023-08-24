@@ -33,6 +33,7 @@ func (us *userService) Create(ctx context.Context, u *CreateUserReq) (*CreateUse
 	if err != nil {
 		log.Printf("error while trying to hash the user password : %v \n", err)
 	}
+	log.Println("the hashed password is > ", u.Password)
 
 	// convert the req dto into domain entity to pass to the data layer
 	domainUser := u.ToDomainEntity()
@@ -58,14 +59,16 @@ func (us *userService) Create(ctx context.Context, u *CreateUserReq) (*CreateUse
 func (us *userService) Login(ctx context.Context, u *LoginUserReq) (*LoginUserRes, error) {
 	var err error
 
-	// loginPassword := u.Password
-
 	// set the context timeout to pass it to the business logic and repo logic
 	ctx, cancel := context.WithTimeout(ctx, us.timeout)
 	defer cancel()
 
 	// convert the login dto into user domain entity to pass it to the data layer
 	user := u.ToDomainEntity()
+
+	log.Println("the password sent in login request is : ", user.Password)
+	hashIt, _ := utils.HashPassword(user.Password)
+	log.Println("after we hash it : ", hashIt)
 
 	// we need to check if this email exists or not
 	registeredUser, err := us.repo.Login(ctx, user.Email)
